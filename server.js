@@ -1,49 +1,74 @@
-/*
-const express = require('express');
-const { Pool } = require('pg');
-require('dotenv').config();
+import pg from 'pg';
 
-const app = express();
-const port = process.env.PORT || 3000;
+// Destructure Client class from the pg module
+const { Client } = pg;
 
-// Configuración de la base de datos PostgreSQL
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+// Define the connection string to connect to the PostgreSQL database
+//const connectionString = 'postgresql://basedatos_postgresql_user:sqwLhN61zMBl9URhYQEJ18YT7Yu3amhl@dpg-cqkd3prqf0us73c7jgq0-a.oregon-postgres.render.com/basedatos_postgresql?ssl=true';
+const connectionString =
+'postgresql://base_de_datos_1erintento_user:c1hAhfjFt87HP0tGev3NpqZJK2wbCURW@dpg-cqlmvglumphs7396v9a0-a.oregon-postgres.render.com:5432/base_de_datos_1erintento?ssl=true';
+
+// Create a new Client instance with the connection string
+const client = new Client({
+  connectionString,
 });
 
-// Middleware para parsear JSON
-app.use(express.json());
-
-// Ruta de ejemplo para obtener datos
-app.get('/data', async (req, res) => {
+// Define an asynchronous function to create a table using a single client connection
+async function createTableWithClient() {
   try {
-    const result = await pool.query('SELECT * FROM ');
-    res.json(result.rows);
+    // Establish a connection to the database
+    await client.connect();
+    console.log('Connected to the database.');
+
+    // Execute the SQL query to create the table if it does not exist
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS empleados (
+        id SERIAL PRIMARY KEY,
+        nombre VARCHAR(100) NOT NULL,
+        edad INTEGER NOT NULL,
+        puesto VARCHAR(100) NOT NULL
+      );
+    `);
+
+    console.log('Table "empleados" created or already exists.');
+
+    // Call the function to insert data after creating the table
+    await insertData();
   } catch (error) {
-    console.error('Error ejecutando la consulta', error);
-    res.status(500).send('Error en la consulta');
+    // Log any errors that occur during table creation
+    console.error('Error creating table:', error.message);
+    console.error('Error details:', error);
+  } finally {
+    // Close the client connection when done
+    await client.end();
   }
-});
+}
 
-// Inicia el servidor
-app.listen(port, () => {
-  console.log(`Servidor escuchando en el puerto ${port}`);
-});
-*/
+// Define an asynchronous function to insert data into the empleados table
+async function insertData() {
+  try {
+    // Reconnect to the database to perform data insertion
+    await client.connect();
+    console.log('Connected to the database.');
 
-const pgp = require('pg-promise')(/* options */)
-// const db = pgp('postgresql://base_de_datos_1erintento_user:c1hAhfjFt87HP0tGev3NpqZJK2wbCURW@dpg-cqlmvglumphs7396v9a0-a/base_de_datos_1erintento')
-const db = pgp('postgres://base_de_datos_1erintento_user:c1hAhfjFt87HP0tGev3NpqZJK2wbCURW@dpg-cqlmvglumphs7396v9a0-a:5432/base_de_datos_1erintento')
+    // Insert data into the empleados table
+    await client.query(`
+      INSERT INTO empleados (nombre, edad, puesto) VALUES
+      ('Juan Pérez', 30, 'Desarrollador'),
+      ('Ana García', 25, 'Diseñadora'),
+      ('Luis Martínez', 40, 'Gerente');
+    `);
 
+    console.log('Data inserted successfully.');
+  } catch (error) {
+    // Log any errors that occur during data insertion
+    console.error('Error inserting data:', error.message);
+    console.error('Error details:', error);
+  } finally {
+    // Close the client connection when done
+    await client.end();
+  }
+}
 
-db.one('SELECT * AS value')
-  .then((data) => {
-    console.log('DATA:', data.value)
-  })
-  .catch((error) => {
-    console.log('ERROR:', error)
-  })
+// Call the function to create the table
+createTableWithClient();
