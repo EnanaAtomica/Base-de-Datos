@@ -17,7 +17,7 @@ const client = new Client({
 
 // Initialize Express app
 const app = express();
-const port = 3000;
+const port = 3500;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -27,11 +27,14 @@ async function insertDefaultData() {
     try {
         await client.connect();
         const query = `
-            INSERT INTO users (name, email) VALUES
-            ('John Doe', 'john.doherngsgdgs@example.com'),
-            ('Jane Smith', 'jane.smithsdgdsfg@example.com'),
-            ('Alice Johnson', 'alice.johnsogsdfgdn@example.com')
-            ON CONFLICT (email) DO NOTHING;
+            INSERT INTO empleados (nombre, edad, puesto) VALUES
+      ('Juan Pérez del Sol', 40, 'Arquitecto'),
+      ('Alan Martinez', 18, 'Secuestrador'),
+      ('Tomas Irigoyen', 15, 'Ladron'),
+      ('María Susena', 55, 'Jefe mayor de obras'),
+      ('ALberto Fernández', 35, 'Psicologo'),
+      ('Laura Giaz', 60, 'Psiquiatra'),
+      ('Carlos Ruinas', 28, 'Desempleado');
         `;
         await client.query(query);
         return 'Default data inserted successfully.';
