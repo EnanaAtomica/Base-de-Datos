@@ -49,7 +49,7 @@ async function insertDefaultData() {
 async function readData() {
     try {
         await client.connect();
-        const result = await client.query('SELECT * FROM users');
+        const result = await client.query('SELECT * FROM empleados');
         return result.rows;
     } catch (error) {
         throw error;
@@ -62,7 +62,7 @@ async function readData() {
 async function deleteData(id) {
     try {
         await client.connect();
-        const query = 'DELETE FROM users WHERE id = $1 RETURNING *;';
+        const query = 'DELETE FROM empleados WHERE id = $1 RETURNING *;';
         const result = await client.query(query, [id]);
         return result.rows;
     } catch (error) {
@@ -76,7 +76,7 @@ async function deleteData(id) {
 async function deleteAllData() {
     try {
         await client.connect();
-        const query = 'DELETE FROM users';
+        const query = 'DELETE FROM empleados';
         await client.query(query);
         return 'All data deleted successfully.';
     } catch (error) {
